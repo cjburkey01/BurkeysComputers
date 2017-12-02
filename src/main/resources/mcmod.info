@@ -1,0 +1,16 @@
+[
+{
+  "modid": "${modid}",
+  "name": "Burkey's Computers",
+  "description": "CJ Burkey's take on computers in Minecraft.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["CJ Burkey"],
+  "credits": "The Forge and FML guys, for making forge.",
+  "logoFile": "logo.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]
