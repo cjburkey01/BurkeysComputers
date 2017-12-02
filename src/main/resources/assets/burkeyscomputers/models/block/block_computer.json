@@ -1,0 +1,8 @@
+{
+    "parent": "block/orientable",
+    "textures": {
+        "top": "burkeyscomputers:blocks/block_computer_side",
+        "front": "burkeyscomputers:blocks/block_computer_front",
+        "side": "burkeyscomputers:blocks/block_computer_side"
+    }
+}

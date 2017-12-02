@@ -8,6 +8,6 @@ public class ModInfo {
 	
 	public static final String PROXY_BASE = "com.cjburkey.burkeyscomputers.proxy";
 	public static final String CLIENT_PROXY = PROXY_BASE + ".ClientProxy";
-	public static final String SERVER_PROXY = PROXY_BASE + ".ServertProxy";
+	public static final String SERVER_PROXY = PROXY_BASE + ".ServerProxy";
 	
 }

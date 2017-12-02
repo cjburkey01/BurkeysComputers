@@ -1,6 +1,6 @@
 package com.cjburkey.burkeyscomputers;
 
-import com.cjburkey.burcore.proxy.CommonProxy;
+import com.cjburkey.burkeyscomputers.proxy.CommonProxy;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;

@@ -1,0 +1,19 @@
+{
+    "variants": {
+        "facing=north": {
+            "model": "burkeyscomputers:block_computer"
+        },
+        "facing=east":  {
+            "model": "burkeyscomputers:block_computer",
+            "y": 90
+        },
+        "facing=south": {
+            "model": "burkeyscomputers:block_computer",
+            "y": 180
+        },
+        "facing=west":  {
+            "model": "burkeyscomputers:block_computer",
+            "y": 270
+        }
+    }
+}
