@@ -6,6 +6,7 @@ import com.cjburkey.burkeyscomputers.computers.ComputerFileSystem;
 import com.cjburkey.burkeyscomputers.computers.IComputer;
 import com.cjburkey.burkeyscomputers.computers.TermCell;
 import com.cjburkey.burkeyscomputers.computers.TermPos;
+import com.cjburkey.burkeyscomputers.terminal.bersh.CommandHandler;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
@@ -18,11 +19,14 @@ public class TileEntityComputer extends TileEntity implements IComputer {
 	private long uniqueId;
 	private TermCell[] screen;
 	private ComputerFileSystem fs;
+	private CommandHandler ch;
 	
 	public TileEntityComputer() {
 		uniqueId = new Random().nextLong();
 		clearScreen();
+		// TODO: MOVE THESE THINGS INTO THEIR OWN PLACES, WE DON'T WANT THIS ON THE TILE ENTITY!!
 		fs = new ComputerFileSystem(this);
+		ch = new CommandHandler();
 	}
 	
 	public long getUniqueId() {
@@ -73,6 +77,10 @@ public class TileEntityComputer extends TileEntity implements IComputer {
 	
 	public ComputerFileSystem getFileSystem() {
 		return fs;
+	}
+	
+	public CommandHandler getTerminalCommandHandler() {
+		return ch;
 	}
 	
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
