@@ -1,14 +1,19 @@
 package com.cjburkey.burkeyscomputers.computers;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 
 public interface IComputer {
 	
-	char[] getScreen();
+	long getUniqueId();
+	TermCell[] getScreen();
+	TermCell getCell(TermPos pos);
 	void clearScreen();
-	void setCharacter(int column, int row, char character);
-	char getCharacter(int column, int row);
 	void keyTyped(int code, char typed);
+	boolean fitsOnScreen(TermPos pos);
 	BlockPos getPos();
+	ComputerFileSystem getFileSystem();
+	NBTTagCompound writeToNBT(NBTTagCompound nbt);
+	void readFromNBT(NBTTagCompound nbt);
 	
 }

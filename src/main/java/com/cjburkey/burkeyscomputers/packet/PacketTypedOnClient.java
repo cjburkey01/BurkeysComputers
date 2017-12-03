@@ -12,16 +12,16 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class PacketComputerToServer implements IMessage {
+public class PacketTypedOnClient implements IMessage {
 	
 	private BlockPos pos;
 	private int code;
 	private char typed;
 	
-	public PacketComputerToServer() {
+	public PacketTypedOnClient() {
 	}
 	
-	public PacketComputerToServer(IComputer cmp, int code, char typed) {
+	public PacketTypedOnClient(IComputer cmp, int code, char typed) {
 		pos = cmp.getPos();
 		this.code = code;
 		this.typed = typed;
@@ -49,9 +49,9 @@ public class PacketComputerToServer implements IMessage {
 		ByteBufUtils.writeUTF8String(buf, pos.getX() + ";" + pos.getY() + ";" + pos.getZ() + ";" + code + ";" + typed);
 	}
 	
-	public static class Handler implements IMessageHandler<PacketComputerToServer, PacketComputerToClient> {
+	public static class Handler implements IMessageHandler<PacketTypedOnClient, PacketUpdateClient> {
 		
-		public PacketComputerToClient onMessage(PacketComputerToServer msg, MessageContext ctx) {
+		public PacketUpdateClient onMessage(PacketTypedOnClient msg, MessageContext ctx) {
 			if (msg == null) {
 				ModLog.info("Packet doesn't exist.");
 				return null;
@@ -63,7 +63,7 @@ public class PacketComputerToServer implements IMessage {
 			}
 			TileEntityComputer cmptr = (TileEntityComputer) ent;
 			cmptr.keyTyped(msg.code, msg.typed);
-			return new PacketComputerToClient(cmptr);
+			return new PacketUpdateClient(cmptr);
 		}
 		
 	}

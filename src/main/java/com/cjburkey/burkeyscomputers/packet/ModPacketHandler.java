@@ -12,8 +12,8 @@ public class ModPacketHandler {
 	public static void initNetwork() {
 		network = NetworkRegistry.INSTANCE.newSimpleChannel(ModInfo.MOD_ID);
 		
-		network.registerMessage(PacketComputerToServer.Handler.class, PacketComputerToServer.class, 0, Side.SERVER);
-		network.registerMessage(PacketComputerToClient.Handler.class, PacketComputerToClient.class, 1, Side.CLIENT);
+		network.registerMessage(PacketTypedOnClient.Handler.class, PacketTypedOnClient.class, 0, Side.SERVER);
+		network.registerMessage(PacketUpdateClient.Handler.class, PacketUpdateClient.class, 1, Side.CLIENT);
 	}
 	
 	public static SimpleNetworkWrapper getNetwork() {
