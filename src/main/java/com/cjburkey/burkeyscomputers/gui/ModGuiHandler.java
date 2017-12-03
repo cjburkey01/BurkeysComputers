@@ -11,14 +11,14 @@ public class ModGuiHandler implements IGuiHandler {
 
 	public Object getServerGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
 		if (id == GuiComputer.id) {
-			return new ContainerComputer((TileEntityComputer) world.getTileEntity(new BlockPos(x, y, z)));
+			return new ContainerComputer(TileEntityComputer.getAt(world, new BlockPos(x, y, z)).getComputer());
 		}
 		return null;
 	}
 
 	public Object getClientGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
 		if (id == GuiComputer.id) {
-			return new GuiComputer(new ContainerComputer((TileEntityComputer) world.getTileEntity(new BlockPos(x, y, z))));
+			return new GuiComputer(new ContainerComputer(TileEntityComputer.getAt(world, new BlockPos(x, y, z)).getComputer()));
 		}
 		return null;
 	}

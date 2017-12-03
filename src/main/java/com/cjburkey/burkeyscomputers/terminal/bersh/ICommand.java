@@ -6,6 +6,8 @@ public interface ICommand {
 	String[] getAllArgs();
 	int getRequiredArgs();
 	CommandHandler getSubCommandHandler();
-	void onCall(String[] args);
+	EnumCommandResponse onCall(String[] args);
+	boolean equals(Object other);
+	int hashCode();
 	
 }

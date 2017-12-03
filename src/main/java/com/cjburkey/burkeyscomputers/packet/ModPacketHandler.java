@@ -14,6 +14,8 @@ public class ModPacketHandler {
 		
 		network.registerMessage(PacketTypedOnClient.Handler.class, PacketTypedOnClient.class, 0, Side.SERVER);
 		network.registerMessage(PacketUpdateClient.Handler.class, PacketUpdateClient.class, 1, Side.CLIENT);
+		
+		network.registerMessage(PacketReturnID.Handler.class, PacketReturnID.class, 2, Side.CLIENT);
 	}
 	
 	public static SimpleNetworkWrapper getNetwork() {

@@ -1,10 +1,12 @@
 package com.cjburkey.burkeyscomputers.proxy;
 
 import com.cjburkey.burkeyscomputers.BurkeysComputers;
+import com.cjburkey.burkeyscomputers.event.WorldLoaded;
 import com.cjburkey.burkeyscomputers.gui.ModGuiHandler;
 import com.cjburkey.burkeyscomputers.packet.ModPacketHandler;
 import com.cjburkey.burkeyscomputers.tile.TileEntityComputer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -19,6 +21,7 @@ public class CommonProxy {
 	
 	public void preinit(FMLPreInitializationEvent e) {
 		ModPacketHandler.initNetwork();
+		MinecraftForge.EVENT_BUS.register(new WorldLoaded());
 	}
 	
 	public void init(FMLInitializationEvent e) {

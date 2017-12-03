@@ -137,7 +137,7 @@ public final class TermCell {
 			char character = nbt.getString("character").charAt(0);
 			return new TermCell(det, foregroundColor, backgroundColor, character);
 		} catch(Exception e) {
-			ModLog.info("Failed to create TermCell from nbt: " + e.getMessage());
+			ModLog.error("Failed to create TermCell from nbt: " + e.getMessage());
 		}
 		return null;
 	}

@@ -29,7 +29,6 @@ public class ReferenceFile {
 		path = out.toArray(new String[out.size()]);
 		name = tmp[tmp.length - 1];
 		dir = name.indexOf('.') < 0;
-		System.out.println(getPath());
 	}
 	
 	public String getPath() {

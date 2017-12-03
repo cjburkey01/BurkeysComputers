@@ -1,6 +1,10 @@
 package com.cjburkey.burkeyscomputers.block;
 
 import com.cjburkey.burkeyscomputers.BurkeysComputers;
+import com.cjburkey.burkeyscomputers.ModLog;
+import com.cjburkey.burkeyscomputers.computers.ComputerHandler;
+import com.cjburkey.burkeyscomputers.computers.ComputerOpener;
+import com.cjburkey.burkeyscomputers.computers.WorldComputer;
 import com.cjburkey.burkeyscomputers.gui.GuiComputer;
 import com.cjburkey.burkeyscomputers.tile.TileEntityComputer;
 import net.minecraft.block.Block;
@@ -15,6 +19,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -36,15 +41,38 @@ public class BlockComputer extends Block implements ITileEntityProvider {
 		setHarvestLevel("pickaxe", 1);
 	}
 	
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float x, float y, float z) {
-		if (!world.isRemote) {
-			player.openGui(BurkeysComputers.instance, GuiComputer.id, world, pos.getX(), pos.getY(), pos.getZ());
-		}
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer ply, EnumHand hand, EnumFacing facing, float x, float y, float z) {
+		ComputerOpener.openForPlayer(ply, world, pos);
 		return true;
 	}
 	
+	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+		if (!world.isRemote) {
+			TileEntityComputer at = TileEntityComputer.getAt(world, pos);
+			if (at == null) {
+				return;
+			}
+			WorldComputer comp = new WorldComputer(pos, world.provider.getDimension());
+			ComputerHandler.get(world).addComputer(comp);
+			at.setComputer(comp.getUniqueId());
+			ModLog.info("Created computer with id: " + comp.getUniqueId());
+		}
+	}
+	
 	public void onBlockAdded(World world, BlockPos pos, IBlockState state) {
-		setDefaultFacing(world, pos, state);
+		if (!world.isRemote) {
+			setDefaultFacing(world, pos, state);
+		}
+	}
+	
+	public void breakBlock(World world, BlockPos pos, IBlockState state) {
+		if (!world.isRemote) {
+			TileEntityComputer ent = TileEntityComputer.getAt(world, pos);
+			if (ent != null) {
+				ComputerHandler.get(world).removeComputer(ent.getComputer());
+				ModLog.info("Removed computer: " + ent.getComputer());
+			}
+		}
 	}
 	
 	private void setDefaultFacing(World world, BlockPos pos, IBlockState state) {

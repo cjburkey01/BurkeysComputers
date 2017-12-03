@@ -3,14 +3,13 @@ package com.cjburkey.burkeyscomputers.gui;
 import java.io.IOException;
 import org.lwjgl.input.Keyboard;
 import com.cjburkey.burkeyscomputers.ModInfo;
+import com.cjburkey.burkeyscomputers.computers.ComputerOpener;
 import com.cjburkey.burkeyscomputers.computers.IComputer;
-import com.cjburkey.burkeyscomputers.computers.ReferenceFile;
 import com.cjburkey.burkeyscomputers.computers.TermCell;
 import com.cjburkey.burkeyscomputers.computers.TermPos;
 import com.cjburkey.burkeyscomputers.container.ContainerComputer;
 import com.cjburkey.burkeyscomputers.packet.ModPacketHandler;
 import com.cjburkey.burkeyscomputers.packet.PacketTypedOnClient;
-import com.cjburkey.burkeyscomputers.tile.TileEntityComputer;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
@@ -22,13 +21,12 @@ public class GuiComputer extends GuiContainer {
 	public static final int startDrawY = 5;
 	public static final int characterPadding = 1;
 	
-	private final IComputer computer;
+	private long computer;
 	
-	private static TermCell[] drawnCells = TileEntityComputer.getNewEmpty();
+	private static TermCell[] drawnCells = IComputer.getNewEmptyScreen();
 	
 	public GuiComputer(ContainerComputer container) {
 		super(container);
-		computer = container.getComputer();
 		
 		xSize = 239;
 		ySize = 148;
@@ -49,7 +47,10 @@ public class GuiComputer extends GuiContainer {
 	}
 	
 	public void updateScreenContents(int key, char character) {
-		ModPacketHandler.getNetwork().sendToServer(new PacketTypedOnClient(computer, key, character));
+		computer = ComputerOpener.getClientComputer();
+		if (computer >= 0) {
+			ModPacketHandler.getNetwork().sendToServer(new PacketTypedOnClient(computer, key, character));
+		}
 	}
 	
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
@@ -76,8 +77,8 @@ public class GuiComputer extends GuiContainer {
 	}
 	
 	private void drawTerminal(int mx, int my) {
-		int cols = TileEntityComputer.cols;
-		int rows = TileEntityComputer.rows;
+		int cols = IComputer.cols;
+		int rows = IComputer.rows;
 		for (int x = 0; x < cols; x ++) {
 			for (int y = 0; y < rows; y ++) {
 				TermCell cell = drawnCells[y * cols + x];
@@ -86,7 +87,7 @@ public class GuiComputer extends GuiContainer {
 			}
 		}
 		TermPos pos = pixelToCell(mx - guiLeft, my - guiTop);
-		if (computer.fitsOnScreen(pos)) {
+		if (IComputer.fitsOnScreen(pos)) {
 			fillCell(pos.col, pos.row, 0x44FFFFFF);
 		}
 	}
