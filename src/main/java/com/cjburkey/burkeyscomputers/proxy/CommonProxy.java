@@ -2,6 +2,7 @@ package com.cjburkey.burkeyscomputers.proxy;
 
 import com.cjburkey.burkeyscomputers.BurkeysComputers;
 import com.cjburkey.burkeyscomputers.gui.ModGuiHandler;
+import com.cjburkey.burkeyscomputers.packet.ModPacketHandler;
 import com.cjburkey.burkeyscomputers.tile.TileEntityComputer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
@@ -17,7 +18,7 @@ public class CommonProxy {
 	}
 	
 	public void preinit(FMLPreInitializationEvent e) {
-		
+		ModPacketHandler.initNetwork();
 	}
 	
 	public void init(FMLInitializationEvent e) {

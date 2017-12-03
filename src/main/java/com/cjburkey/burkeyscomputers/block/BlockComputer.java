@@ -96,7 +96,7 @@ public class BlockComputer extends Block implements ITileEntityProvider {
 	}
 	
 	public TileEntity createNewTileEntity(World world, int data) {
-		return new TileEntityComputer(32, 18);
+		return new TileEntityComputer();
 	}
 	
 }

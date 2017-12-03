@@ -1,14 +1,14 @@
 package com.cjburkey.burkeyscomputers.container;
 
-import com.cjburkey.burkeyscomputers.tile.TileEntityComputer;
+import com.cjburkey.burkeyscomputers.computers.IComputer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 
 public class ContainerComputer extends Container {
 	
-	private TileEntityComputer computer;
+	private IComputer computer;
 	
-	public ContainerComputer(TileEntityComputer computer) {
+	public ContainerComputer(IComputer computer) {
 		this.computer = computer;
 	}
 
@@ -16,7 +16,7 @@ public class ContainerComputer extends Container {
 		return true;
 	}
 	
-	public TileEntityComputer getComputer() {
+	public IComputer getComputer() {
 		return computer;
 	}
 	
