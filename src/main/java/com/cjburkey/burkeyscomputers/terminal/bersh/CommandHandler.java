@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.cjburkey.burkeyscomputers.computers.IComputer;
 import scala.actors.threadpool.Arrays;
 
 public class CommandHandler {
@@ -23,6 +24,12 @@ public class CommandHandler {
 		commands.add(cmd);
 	}
 	
+	public void addCommand(CommandSet cmds) {
+		for (ICommand cmd : cmds.getCommands()) {
+			addCommand(cmd);
+		}
+	}
+	
 	public void removeCommand(ICommand cmd) {
 		if (!commandExists(cmd.getName())) {
 			return;
@@ -30,7 +37,7 @@ public class CommandHandler {
 		commands.remove(cmd);
 	}
 	
-	public void callCommand(String line) {
+	public EnumCommandResponse callCommand(IComputer computer, String line) {
 		List<String> pieces = new ArrayList<>();
 		String regex = "\"([^\"]*)\"|(\\S+)";
 		Matcher m = Pattern.compile(regex).matcher(line);
@@ -41,10 +48,10 @@ public class CommandHandler {
 				pieces.add(m.group(2));
 			}
 		}
-		process(pieces.toArray(new String[pieces.size()]));
+		return process(computer, pieces.toArray(new String[pieces.size()]));
 	}
 	
-	private EnumCommandResponse process(String[] segments) {
+	private EnumCommandResponse process(IComputer computer, String[] segments) {
 		if (segments.length < 1) {
 			return EnumCommandResponse.EMPTY;
 		}
@@ -56,19 +63,23 @@ public class CommandHandler {
 			if (segments.length < 2) {
 				return EnumCommandResponse.ARGS_SHORT;
 			}
-			return cmd.getSubCommandHandler().process((String[]) Arrays.copyOfRange(segments, 1, segments.length, String.class));
+			return cmd.getSubCommandHandler().process(computer, extractArgsArray(segments));
 		}
 		if (segments.length - 1 < cmd.getRequiredArgs()) {
 			return EnumCommandResponse.ARGS_SHORT;
 		}
-		if (segments.length - 1 >= cmd.getAllArgs().length) {
+		if (segments.length - 1 > cmd.getAllArgs().length) {
 			return EnumCommandResponse.ARGS_LONG;
 		}
-		String[] args = new String[0];
-		if (cmd.getAllArgs().length > 0) {
-			args = (String[]) Arrays.copyOfRange(segments, 1, segments.length, String.class);
+		return cmd.onCall(computer, extractArgsArray(segments));
+	}
+	
+	private String[] extractArgsArray(String[] segments) {
+		String[] args = new String[segments.length - 1];
+		for (int i = 1; i < segments.length; i ++) {
+			args[i - 1] = segments[i];
 		}
-		return cmd.onCall(args);
+		return args;
 	}
 	
 	public String getUsage(ICommand cmd) {
@@ -116,6 +127,11 @@ public class CommandHandler {
 			}
 		}
 		return null;
+	}
+	
+	public ICommand getCommandFromLine(String line) {
+		String[] s = line.trim().split(Pattern.quote(" "));
+		return getCommand(s[0].trim());
 	}
 	
 	public ICommand[] getCommands() {

@@ -30,17 +30,22 @@ public interface IComputer {
 		return null;
 	}
 	
+	void resetDisplay();
 	void updateId(long id);
 	long getUniqueId();
 	TermCell[] getScreen();
 	TermCell getCell(TermPos pos);
 	void clearScreen();
 	void keyTyped(int code, char typed);
+	void drawStringAtCursor(String in);
 	ComputerFileSystem getFileSystem();
 	CommandHandler getTerminalCommandHandler();
 	NBTTagCompound writeToNBT(NBTTagCompound nbt);
 	void readFromNBT(NBTTagCompound nbt);
 	String save();
 	void load(String data);
+	MutTermPos getCursor();
+	void setCursor(TermPos pos);
+	void resetCursor();
 	
 }

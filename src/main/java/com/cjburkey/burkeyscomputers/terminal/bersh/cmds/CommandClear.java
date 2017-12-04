@@ -5,18 +5,18 @@ import com.cjburkey.burkeyscomputers.terminal.bersh.CommandHandler;
 import com.cjburkey.burkeyscomputers.terminal.bersh.EnumCommandResponse;
 import com.cjburkey.burkeyscomputers.terminal.bersh.ICommand;
 
-public class CommandPrint extends CommandBase {
+public class CommandClear extends CommandBase {
 	
 	public String getName() {
-		return "print";
+		return "clear";
 	}
 
 	public String[] getAllArgs() {
-		return new String[] { "message" };
+		return new String[0];
 	}
 
 	public int getRequiredArgs() {
-		return 1;
+		return 0;
 	}
 
 	public CommandHandler getSubCommandHandler() {
@@ -24,8 +24,8 @@ public class CommandPrint extends CommandBase {
 	}
 
 	public EnumCommandResponse onCall(IComputer computer, String[] args) {
-		computer.drawStringAtCursor(args[0]);
-		return EnumCommandResponse.SUCCESS;
+		computer.resetDisplay();
+		return EnumCommandResponse.CANCEL_RESPONSE;
 	}
 	
 }

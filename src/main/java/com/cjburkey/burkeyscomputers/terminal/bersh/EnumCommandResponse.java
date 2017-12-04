@@ -8,5 +8,6 @@ public enum EnumCommandResponse {
 	ARGS_LONG,
 	SUCCESS,
 	FAIL,
+	CANCEL_RESPONSE,
 	
 }

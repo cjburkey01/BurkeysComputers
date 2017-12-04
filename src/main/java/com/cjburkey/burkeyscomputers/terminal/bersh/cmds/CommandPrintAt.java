@@ -1,22 +1,22 @@
 package com.cjburkey.burkeyscomputers.terminal.bersh.cmds;
 
 import com.cjburkey.burkeyscomputers.computers.IComputer;
+import com.cjburkey.burkeyscomputers.computers.TermPos;
 import com.cjburkey.burkeyscomputers.terminal.bersh.CommandHandler;
 import com.cjburkey.burkeyscomputers.terminal.bersh.EnumCommandResponse;
-import com.cjburkey.burkeyscomputers.terminal.bersh.ICommand;
 
-public class CommandPrint extends CommandBase {
+public class CommandPrintAt extends CommandBase {
 	
 	public String getName() {
-		return "print";
+		return "printat";
 	}
 
 	public String[] getAllArgs() {
-		return new String[] { "message" };
+		return new String[] { "message", "column", "row" };
 	}
 
 	public int getRequiredArgs() {
-		return 1;
+		return 3;
 	}
 
 	public CommandHandler getSubCommandHandler() {
@@ -24,7 +24,14 @@ public class CommandPrint extends CommandBase {
 	}
 
 	public EnumCommandResponse onCall(IComputer computer, String[] args) {
-		computer.drawStringAtCursor(args[0]);
+		try {
+			int col = Integer.parseInt(args[1]);
+			int row = Integer.parseInt(args[2]);
+			computer.setCursor(new TermPos(col, row));
+			computer.drawStringAtCursor(args[0]);
+			return EnumCommandResponse.SUCCESS;
+		} catch(Exception e) {  }
+		computer.drawStringAtCursor("Please enter valid rows/columns");
 		return EnumCommandResponse.SUCCESS;
 	}
 	

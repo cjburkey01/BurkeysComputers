@@ -17,18 +17,19 @@ import net.minecraft.util.ResourceLocation;
 public class GuiComputer extends GuiContainer {
 
 	public static final int id = 0;
-	public static final int startDrawX = 5;
+	public static final int startDrawX = 12;
 	public static final int startDrawY = 5;
 	public static final int characterPadding = 1;
 	
 	private long computer;
 	
 	private static TermCell[] drawnCells = IComputer.getNewEmptyScreen();
+	private static TermPos cursorPos;
 	
 	public GuiComputer(ContainerComputer container) {
 		super(container);
 		
-		xSize = 239;
+		xSize = 246;
 		ySize = 148;
 	}
 	
@@ -37,13 +38,17 @@ public class GuiComputer extends GuiContainer {
 		updateScreenContents(0, (char) 0);
 	}
 	
-	public static void updateContents(TermCell[] updated) {
+	public static void updateContents(TermPos cursor, TermCell[] updated) {
 		if (updated == null) {
 			return;
 		}
 		if (drawnCells == null || updated.length == drawnCells.length) {
 			drawnCells = updated;
 		}
+		if (cursor == null) {
+			return;
+		}
+		cursorPos = cursor;
 	}
 	
 	public void updateScreenContents(int key, char character) {
@@ -116,7 +121,12 @@ public class GuiComputer extends GuiContainer {
 	private void drawCellForeground(int col, int row, TermCell cell) {
 		TermPos p = cellToPixel(col, row);
 		String a = "" + cell.getCharacter();
-		fontRenderer.drawString(a, p.col + (TermCell.characterWidth - fontRenderer.getStringWidth(a)) / 2, p.row + 1, cell.getDrawingForegroundColor());
+		int x = p.col + (TermCell.characterWidth - fontRenderer.getStringWidth(a)) / 2;
+		int y = p.row + 1;
+		fontRenderer.drawString(a, x, y, cell.getDrawingForegroundColor());
+		if (cursorPos != null && cursorPos.col == col && cursorPos.row == row) {
+			fontRenderer.drawString("_", x, y, cell.getDrawingForegroundColor());
+		}
 	}
 	
 	public boolean doesGuiPauseGame() {

@@ -54,8 +54,12 @@ public class PacketTypedOnClient implements IMessage {
 		public PacketUpdateClient onMessage(PacketTypedOnClient msg, MessageContext ctx) {
 			World world = ctx.getServerHandler().player.world;
 			IComputer at = ComputerHandler.get(world).getComputer(msg.id);
-			at.keyTyped(msg.code, msg.typed);
-			return new PacketUpdateClient(world, msg.id);
+			if (at != null) {
+				at.keyTyped(msg.code, msg.typed);
+				return new PacketUpdateClient(world, msg.id);
+			}
+			ModLog.error("Computer is null: " + msg.id);
+			return null;
 		}
 		
 	}

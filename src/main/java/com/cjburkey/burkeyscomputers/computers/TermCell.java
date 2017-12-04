@@ -25,7 +25,7 @@ public final class TermCell {
 	}
 	
 	public TermCell(char character) {
-		this(0x55FF55, character);
+		this(0x33BB33, character);
 	}
 	
 	public TermCell(int foregroundColor, char character) {
@@ -41,6 +41,11 @@ public final class TermCell {
 		this.backgroundColor = backgroundColor;
 		this.character = character;
 		this.det = det;
+	}
+	
+	public void defaultColors() {
+		foregroundColor = 0x33BB33;
+		backgroundColor = 0x2A2A2A;
 	}
 
 	public void setForegroundColor(int foregroundcolor) {

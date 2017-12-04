@@ -1,19 +1,21 @@
 package com.cjburkey.burkeyscomputers.computers;
 
-import io.netty.buffer.ByteBuf;
-
-public class TermPos {
+public class MutTermPos {
 	
-	public final int col;
-	public final int row;
+	public int col;
+	public int row;
 	
-	public TermPos() {
+	public MutTermPos() {
 		this(0, 0);
 	}
 	
-	public TermPos(int col, int row) {
+	public MutTermPos(int col, int row) {
 		this.col = col;
 		this.row = row;
+	}
+	
+	public TermPos getImmutPos() {
+		return new TermPos(col, row);
 	}
 	
 	public int hashCode() {
@@ -34,7 +36,7 @@ public class TermPos {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		TermPos other = (TermPos) obj;
+		MutTermPos other = (MutTermPos) obj;
 		if (col != other.col) {
 			return false;
 		}
@@ -42,15 +44,6 @@ public class TermPos {
 			return false;
 		}
 		return true;
-	}
-	
-	public void writeToBuf(ByteBuf buf) {
-		buf.writeInt(col);
-		buf.writeInt(row);
-	}
-	
-	public static TermPos fromByteBuf(ByteBuf buf) {
-		return new TermPos(buf.readInt(), buf.readInt());
 	}
 	
 }
