@@ -13,21 +13,24 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class PacketUpdateClient implements IMessage {
-	
-	private TermCell[] screen;
+public class PacketUpdateToClient implements IMessage {
+
+	private boolean working;
 	private TermPos cursor;
+	private TermCell[] screen;
 	
-	public PacketUpdateClient() {
+	public PacketUpdateToClient() {
 	}
 	
-	public PacketUpdateClient(World world, long computer) {
+	public PacketUpdateToClient(World world, long computer) {
 		IComputer comp = ComputerHandler.get(world).getComputer(computer);
-		screen = comp.getScreen();
+		working = !comp.getProcessHandler().isEmpty();
 		cursor = comp.getCursor().getImmutPos();
+		screen = comp.getScreen();
 	}
 	
 	public void fromBytes(ByteBuf buf) {
+		working = buf.readBoolean();
 		cursor = TermPos.fromByteBuf(buf);
 		int length = IComputer.cols * IComputer.rows;
 		List<TermCell> cells = new ArrayList<>();
@@ -41,17 +44,18 @@ public class PacketUpdateClient implements IMessage {
 	}
 	
 	public void toBytes(ByteBuf buf) {
+		buf.writeBoolean(working);
 		cursor.writeToBuf(buf);
 		for (TermCell cell : screen) {
 			TermCell.writeToBuffer(buf, cell);
 		}
 	}
 	
-	public static class Handler implements IMessageHandler<PacketUpdateClient, IMessage> {
+	public static class Handler implements IMessageHandler<PacketUpdateToClient, IMessage> {
 		 
 		// Run on client
-		public IMessage onMessage(PacketUpdateClient msg, MessageContext ctx) {
-			GuiComputer.updateContents(msg.cursor, msg.screen);
+		public IMessage onMessage(PacketUpdateToClient msg, MessageContext ctx) {
+			GuiComputer.updateContents(msg.working, msg.cursor, msg.screen);
 			return null;
 		}
 		

@@ -9,14 +9,14 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class PacketReturnID implements IMessage {
+public class PacketGetID implements IMessage {
 	
 	private long id;
 	
-	public PacketReturnID() {
+	public PacketGetID() {
 	}
 	
-	public PacketReturnID(long id) {
+	public PacketGetID(long id) {
 		this.id = id;
 	}
 	
@@ -28,9 +28,9 @@ public class PacketReturnID implements IMessage {
 		buf.writeLong(id);
 	}
 	
-	public static class Handler implements IMessageHandler<PacketReturnID, IMessage> {
+	public static class Handler implements IMessageHandler<PacketGetID, IMessage> {
 		
-		public PacketReturnID onMessage(PacketReturnID msg, MessageContext ctx) {
+		public PacketGetID onMessage(PacketGetID msg, MessageContext ctx) {
 			ComputerOpener.setClientComputer(msg.id);
 			return null;
 		}

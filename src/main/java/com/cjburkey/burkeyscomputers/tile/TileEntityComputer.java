@@ -17,9 +17,8 @@ public class TileEntityComputer extends TileEntity implements ITickable {
 	}
 	
 	public void update() {
-		if (hasWorld() && !getWorld().isRemote && firstTick) {
-			firstTick = false;
-			//markDirty();
+		if (comp >= 0) {
+			ComputerHandler.get(getWorld()).getComputer(comp).tick();
 		}
 	}
 	

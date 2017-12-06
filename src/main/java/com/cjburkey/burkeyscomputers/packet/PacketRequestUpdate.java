@@ -11,52 +11,37 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class PacketTypedOnClient implements IMessage {
+public class PacketRequestUpdate implements IMessage {
 	
 	private long id;
-	private int code;
-	private char typed;
 	
-	public PacketTypedOnClient() {
+	public PacketRequestUpdate() {
 	}
 	
-	public PacketTypedOnClient(long cmp, int code, char typed) {
+	public PacketRequestUpdate(long cmp) {
 		id = cmp;
-		this.code = code;
-		this.typed = typed;
 	}
 	
 	public void fromBytes(ByteBuf buf) {
-		String s = ByteBufUtils.readUTF8String(buf);
-		if (s == null) {
-			return;
-		}
-		String[] split = s.split(Pattern.quote(";"));
-		if (split.length != 3) {
-			return;
-		}
-		try  {
-			id = Long.parseLong(split[0]);
-			code = Integer.parseInt(split[1]);
-			typed = split[2].charAt(0);
-		} catch(Exception e) {
-			ModLog.error("Failed to read from bytes: \"" + s + "\".");
-		}
+		id = buf.readLong();
 	}
 	
 	public void toBytes(ByteBuf buf) {
-		ByteBufUtils.writeUTF8String(buf, id + ";" + code + ";" + typed);
+		buf.writeLong(id);
 	}
 	
-	public static class Handler implements IMessageHandler<PacketTypedOnClient, PacketUpdateClient> {
+	public static class Handler implements IMessageHandler<PacketRequestUpdate, PacketUpdateToClient> {
 		
 		// Run on server
-		public PacketUpdateClient onMessage(PacketTypedOnClient msg, MessageContext ctx) {
+		public PacketUpdateToClient onMessage(PacketRequestUpdate msg, MessageContext ctx) {
 			World world = ctx.getServerHandler().player.world;
 			IComputer at = ComputerHandler.get(world).getComputer(msg.id);
 			if (at != null) {
-				at.keyTyped(msg.code, msg.typed);
-				return new PacketUpdateClient(world, msg.id);
+				if (at.hasUpdated()) {
+					return new PacketUpdateToClient(world, msg.id);
+				} else {
+					return null;
+				}
 			}
 			ModLog.error("Computer is null: " + msg.id);
 			return null;

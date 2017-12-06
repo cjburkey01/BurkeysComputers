@@ -9,5 +9,6 @@ public enum EnumCommandResponse {
 	SUCCESS,
 	FAIL,
 	CANCEL_RESPONSE,
+	UNPROCESSED,
 	
 }

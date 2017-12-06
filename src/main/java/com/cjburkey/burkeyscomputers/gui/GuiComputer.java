@@ -9,7 +9,8 @@ import com.cjburkey.burkeyscomputers.computers.TermCell;
 import com.cjburkey.burkeyscomputers.computers.TermPos;
 import com.cjburkey.burkeyscomputers.container.ContainerComputer;
 import com.cjburkey.burkeyscomputers.packet.ModPacketHandler;
-import com.cjburkey.burkeyscomputers.packet.PacketTypedOnClient;
+import com.cjburkey.burkeyscomputers.packet.PacketRequestUpdate;
+import com.cjburkey.burkeyscomputers.packet.PacketUserTyped;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
@@ -17,7 +18,7 @@ import net.minecraft.util.ResourceLocation;
 public class GuiComputer extends GuiContainer {
 
 	public static final int id = 0;
-	public static final int startDrawX = 12;
+	public static final int startDrawX = 11;
 	public static final int startDrawY = 5;
 	public static final int characterPadding = 1;
 	
@@ -25,20 +26,23 @@ public class GuiComputer extends GuiContainer {
 	
 	private static TermCell[] drawnCells = IComputer.getNewEmptyScreen();
 	private static TermPos cursorPos;
+	private static boolean processing;
 	
 	public GuiComputer(ContainerComputer container) {
 		super(container);
 		
-		xSize = 246;
+		xSize = 245;
 		ySize = 148;
 	}
 	
 	public void initGui() {
 		super.initGui();
-		updateScreenContents(0, (char) 0);
+		requestComputerDataPacket();
 	}
 	
-	public static void updateContents(TermPos cursor, TermCell[] updated) {
+	public static void updateContents(boolean working, TermPos cursor, TermCell[] updated) {
+		processing = working;
+		cursorPos = cursor;
 		if (updated == null) {
 			return;
 		}
@@ -48,14 +52,6 @@ public class GuiComputer extends GuiContainer {
 		if (cursor == null) {
 			return;
 		}
-		cursorPos = cursor;
-	}
-	
-	public void updateScreenContents(int key, char character) {
-		computer = ComputerOpener.getClientComputer();
-		if (computer >= 0) {
-			ModPacketHandler.getNetwork().sendToServer(new PacketTypedOnClient(computer, key, character));
-		}
 	}
 	
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
@@ -63,18 +59,22 @@ public class GuiComputer extends GuiContainer {
 			mc.player.closeScreen();
 			return;
 		}
-		updateScreenContents(keyCode, typedChar);
+		sendKeyboardPacketToServer(keyCode, typedChar);
 	}
 	
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		drawDefaultBackground();
 		super.drawScreen(mouseX, mouseY, partialTicks);
+		requestComputerDataPacket();
 	}
 	
 	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		mc.getTextureManager().bindTexture(new ResourceLocation(ModInfo.MOD_ID, "textures/gui/gui_computer.png"));
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
+		if (processing) {
+			drawTexturedModalRect(guiLeft + 4, guiTop + 5, 0, 149, 4, 8);
+		}
 	}
 	
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
@@ -131,6 +131,22 @@ public class GuiComputer extends GuiContainer {
 	
 	public boolean doesGuiPauseGame() {
 		return false;
+	}
+	
+	// -- PACKETS -- //
+	
+	public void requestComputerDataPacket() {
+		computer = ComputerOpener.getClientComputer();
+		if (computer >= 0) {
+			ModPacketHandler.getNetwork().sendToServer(new PacketRequestUpdate(computer));
+		}
+	}
+	
+	public void sendKeyboardPacketToServer(int key, char character) {
+		computer = ComputerOpener.getClientComputer();
+		if (computer >= 0) {
+			ModPacketHandler.getNetwork().sendToServer(new PacketUserTyped(computer, key, character));
+		}
 	}
 	
 }

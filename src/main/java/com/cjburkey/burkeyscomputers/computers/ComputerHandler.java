@@ -56,7 +56,7 @@ public class ComputerHandler extends WorldSavedData {
 			return;
 		}
 		NBTTagList computers = nbt.getTagList("computers", new NBTTagCompound().getId());
-		System.out.println("Loading computers: " + computers.tagCount());
+		ModLog.info("Loading computers: " + computers.tagCount());
 		for (int i = 0; i < computers.tagCount(); i ++) {
 			NBTTagCompound comp = computers.getCompoundTagAt(i);
 			if (comp == null || !comp.hasKey("compLongIDe") || !comp.hasKey("extraData")) {

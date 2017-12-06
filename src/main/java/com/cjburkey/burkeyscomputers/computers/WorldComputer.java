@@ -3,9 +3,11 @@ package com.cjburkey.burkeyscomputers.computers;
 import java.util.regex.Pattern;
 import org.lwjgl.input.Keyboard;
 import com.cjburkey.burkeyscomputers.ModLog;
+import com.cjburkey.burkeyscomputers.terminal.bersh.CmdProcess;
 import com.cjburkey.burkeyscomputers.terminal.bersh.CommandHandler;
 import com.cjburkey.burkeyscomputers.terminal.bersh.CommandSet;
 import com.cjburkey.burkeyscomputers.terminal.bersh.EnumCommandResponse;
+import com.cjburkey.burkeyscomputers.terminal.bersh.ProcessHandler;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 
@@ -19,6 +21,8 @@ public class WorldComputer implements IComputer {
 	private int world;
 	private TermPos prevCursor;
 	private MutTermPos cursorPos;
+	private ProcessHandler processHandler;
+	private boolean updateAvailable = false;
 	
 	private String command = "";
 	
@@ -29,7 +33,18 @@ public class WorldComputer implements IComputer {
 		fs = new ComputerFileSystem(this);
 		ch = new CommandHandler(null);
 		ch.addCommand(new CommandSet());
+		processHandler = new ProcessHandler();
 		resetDisplay();
+	}
+	
+	public boolean hasUpdated() {
+		boolean tmp = updateAvailable;
+		updateAvailable = false;
+		return tmp;
+	}
+	
+	public void tick() {
+		ch.cpuCycle(this, 1);
 	}
 	
 	public void resetDisplay() {
@@ -82,20 +97,10 @@ public class WorldComputer implements IComputer {
 	}
 	
 	public void keyTyped(int code, char typed) {
+		updateAvailable = true;
 		if (code == Keyboard.KEY_NUMPADENTER || code == Keyboard.KEY_RETURN) {
 			setCursor(0, cursorPos.row + 1);
-			EnumCommandResponse res = ch.callCommand(this, command);
-			if (res.equals(EnumCommandResponse.CMD_NOT_FOUND)) {
-				drawStringAtCursor("Command not found");
-			} else if(res.equals(EnumCommandResponse.ARGS_SHORT) || res.equals(EnumCommandResponse.ARGS_LONG)) {
-				drawStringAtCursor("Usage: " + ch.getUsage(ch.getCommandFromLine(command)));
-			} else if(res.equals(EnumCommandResponse.FAIL)) {
-				drawStringAtCursor("Command failed");
-			}
-			if (!res.equals(EnumCommandResponse.CANCEL_RESPONSE)) {
-				setCursor(new TermPos(0, cursorPos.row + 1));
-				setupMainInputLine();
-			}
+			ch.addCommandToExectionStack(this, command);
 			command = "";
 			return;
 		}
@@ -131,6 +136,10 @@ public class WorldComputer implements IComputer {
 	
 	public CommandHandler getTerminalCommandHandler() {
 		return ch;
+	}
+	
+	public ProcessHandler getProcessHandler() {
+		return processHandler;
 	}
 	
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
@@ -184,6 +193,21 @@ public class WorldComputer implements IComputer {
 	
 	public void resetCursor() {
 		setCursor(new TermPos());
+	}
+	
+	public void onCommandResponse(EnumCommandResponse res, CmdProcess process) {
+		if (res.equals(EnumCommandResponse.CMD_NOT_FOUND)) {
+			drawStringAtCursor("Command not found");
+		} else if(res.equals(EnumCommandResponse.ARGS_SHORT) || res.equals(EnumCommandResponse.ARGS_LONG)) {
+			drawStringAtCursor("Usage: " + ch.getUsage(ch.getCommandFromLine(command)));
+		} else if(res.equals(EnumCommandResponse.FAIL)) {
+			drawStringAtCursor("Command failed");
+		}
+		if (!res.equals(EnumCommandResponse.CANCEL_RESPONSE)) {
+			setCursor(new TermPos(0, cursorPos.row + 1));
+			setupMainInputLine();
+		}
+		updateAvailable = true;
 	}
 	
 }

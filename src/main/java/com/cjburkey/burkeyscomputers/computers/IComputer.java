@@ -1,8 +1,10 @@
 package com.cjburkey.burkeyscomputers.computers;
 
+import com.cjburkey.burkeyscomputers.terminal.bersh.CmdProcess;
 import com.cjburkey.burkeyscomputers.terminal.bersh.CommandHandler;
+import com.cjburkey.burkeyscomputers.terminal.bersh.EnumCommandResponse;
+import com.cjburkey.burkeyscomputers.terminal.bersh.ProcessHandler;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
 
 public interface IComputer {
 	
@@ -30,6 +32,8 @@ public interface IComputer {
 		return null;
 	}
 	
+	boolean hasUpdated();
+	void tick();
 	void resetDisplay();
 	void updateId(long id);
 	long getUniqueId();
@@ -40,6 +44,7 @@ public interface IComputer {
 	void drawStringAtCursor(String in);
 	ComputerFileSystem getFileSystem();
 	CommandHandler getTerminalCommandHandler();
+	ProcessHandler getProcessHandler();
 	NBTTagCompound writeToNBT(NBTTagCompound nbt);
 	void readFromNBT(NBTTagCompound nbt);
 	String save();
@@ -47,5 +52,6 @@ public interface IComputer {
 	MutTermPos getCursor();
 	void setCursor(TermPos pos);
 	void resetCursor();
+	void onCommandResponse(EnumCommandResponse response, CmdProcess process);
 	
 }

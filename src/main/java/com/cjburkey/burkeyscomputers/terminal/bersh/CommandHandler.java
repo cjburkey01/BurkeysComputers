@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.cjburkey.burkeyscomputers.computers.IComputer;
-import scala.actors.threadpool.Arrays;
 
 public class CommandHandler {
 
@@ -37,7 +36,31 @@ public class CommandHandler {
 		commands.remove(cmd);
 	}
 	
-	public EnumCommandResponse callCommand(IComputer computer, String line) {
+	public void cpuCycle(IComputer computer, int operationsPerCycle) {
+		for (int i = 0; i < operationsPerCycle; i ++) {
+			if (computer.getProcessHandler().isEmpty()) {
+				return;
+			}
+			executeCommand(computer, computer.getProcessHandler().getNext());
+		}
+	}
+	
+	private void executeCommand(IComputer computer, CmdProcess process) {
+		if (process == null) {
+			return;
+		}
+		if (process.getPredeterminedResult().equals(EnumCommandResponse.UNPROCESSED)) {
+			computer.onCommandResponse(process.getCommand().onCall(computer, process.getArguments()), process);
+			return;
+		}
+		computer.onCommandResponse(process.getPredeterminedResult(), process);
+	}
+	
+	public void addCommandToExectionStack(IComputer computer, String line) {
+		computer.getProcessHandler().addProcess(registerCommandExecution(computer, line));
+	}
+	
+	private CmdProcess registerCommandExecution(IComputer computer, String line) {
 		List<String> pieces = new ArrayList<>();
 		String regex = "\"([^\"]*)\"|(\\S+)";
 		Matcher m = Pattern.compile(regex).matcher(line);
@@ -51,27 +74,27 @@ public class CommandHandler {
 		return process(computer, pieces.toArray(new String[pieces.size()]));
 	}
 	
-	private EnumCommandResponse process(IComputer computer, String[] segments) {
+	private CmdProcess process(IComputer computer, String[] segments) {
 		if (segments.length < 1) {
-			return EnumCommandResponse.EMPTY;
+			return new CmdProcess(null, new String[0], EnumCommandResponse.EMPTY);
 		}
 		ICommand cmd = getCommand(segments[0]);
 		if (cmd == null) {
-			return EnumCommandResponse.CMD_NOT_FOUND;
+			return new CmdProcess(null, new String[0], EnumCommandResponse.CMD_NOT_FOUND);
 		}
 		if (cmd.getSubCommandHandler() != null) {
 			if (segments.length < 2) {
-				return EnumCommandResponse.ARGS_SHORT;
+				return new CmdProcess(cmd, new String[0], EnumCommandResponse.ARGS_SHORT);
 			}
 			return cmd.getSubCommandHandler().process(computer, extractArgsArray(segments));
 		}
 		if (segments.length - 1 < cmd.getRequiredArgs()) {
-			return EnumCommandResponse.ARGS_SHORT;
+			return new CmdProcess(cmd, new String[0], EnumCommandResponse.ARGS_SHORT);
 		}
 		if (segments.length - 1 > cmd.getAllArgs().length) {
-			return EnumCommandResponse.ARGS_LONG;
+			return new CmdProcess(cmd, new String[0], EnumCommandResponse.ARGS_LONG);
 		}
-		return cmd.onCall(computer, extractArgsArray(segments));
+		return new CmdProcess(cmd, extractArgsArray(segments), EnumCommandResponse.UNPROCESSED);
 	}
 	
 	private String[] extractArgsArray(String[] segments) {
