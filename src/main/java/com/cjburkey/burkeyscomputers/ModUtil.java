@@ -31,4 +31,11 @@ public class ModUtil {
 		return (rand.nextInt(exmax - min) + min);
 	}
 	
+	public static <T> T[] removeFirstArrayItem(T[] array, T[] out) {
+		for (int i = 1; i < array.length; i ++) {
+			out[i - 1] = array[i];
+		}
+		return out;
+	}
+	
 }

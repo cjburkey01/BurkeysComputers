@@ -1,6 +1,8 @@
 package com.cjburkey.burkeyscomputers.proxy;
 
 import com.cjburkey.burkeyscomputers.BurkeysComputers;
+import com.cjburkey.burkeyscomputers.computers.BaseComputer;
+import com.cjburkey.burkeyscomputers.computers.WorldComputer;
 import com.cjburkey.burkeyscomputers.event.WorldLoaded;
 import com.cjburkey.burkeyscomputers.gui.ModGuiHandler;
 import com.cjburkey.burkeyscomputers.packet.ModPacketHandler;
@@ -16,7 +18,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 public class CommonProxy {
 	
 	public void construct(FMLConstructionEvent e) {
-		
+		BaseComputer.addComputer(WorldComputer.class);
 	}
 	
 	public void preinit(FMLPreInitializationEvent e) {

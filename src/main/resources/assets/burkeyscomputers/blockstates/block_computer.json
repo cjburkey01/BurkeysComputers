@@ -1,18 +1,33 @@
 {
     "variants": {
-        "facing=north": {
-            "model": "burkeyscomputers:block_computer"
+        "facing=north,working=false": {
+            "model": "burkeyscomputers:block_computer_idle"
         },
-        "facing=east":  {
-            "model": "burkeyscomputers:block_computer",
+        "facing=east,working=false":  {
+            "model": "burkeyscomputers:block_computer_idle",
             "y": 90
         },
-        "facing=south": {
-            "model": "burkeyscomputers:block_computer",
+        "facing=south,working=false": {
+            "model": "burkeyscomputers:block_computer_idle",
             "y": 180
         },
-        "facing=west":  {
-            "model": "burkeyscomputers:block_computer",
+        "facing=west,working=false":  {
+            "model": "burkeyscomputers:block_computer_idle",
+            "y": 270
+        },
+        "facing=north,working=true": {
+            "model": "burkeyscomputers:block_computer_working"
+        },
+        "facing=east,working=true":  {
+            "model": "burkeyscomputers:block_computer_working",
+            "y": 90
+        },
+        "facing=south,working=true": {
+            "model": "burkeyscomputers:block_computer_working",
+            "y": 180
+        },
+        "facing=west,working=true":  {
+            "model": "burkeyscomputers:block_computer_working",
             "y": 270
         }
     }

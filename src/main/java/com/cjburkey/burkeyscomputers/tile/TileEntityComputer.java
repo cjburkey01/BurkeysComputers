@@ -1,6 +1,7 @@
 package com.cjburkey.burkeyscomputers.tile;
 
 import com.cjburkey.burkeyscomputers.ModLog;
+import com.cjburkey.burkeyscomputers.computers.BaseComputer;
 import com.cjburkey.burkeyscomputers.computers.ComputerHandler;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -18,7 +19,12 @@ public class TileEntityComputer extends TileEntity implements ITickable {
 	
 	public void update() {
 		if (comp >= 0) {
-			ComputerHandler.get(getWorld()).getComputer(comp).tick();
+			BaseComputer compD = ComputerHandler.get(getWorld()).getComputer(comp);
+			if (compD == null) {
+				ModLog.error("Computer is null: " + comp);
+				return;
+			}
+			compD.tick();
 		}
 	}
 	

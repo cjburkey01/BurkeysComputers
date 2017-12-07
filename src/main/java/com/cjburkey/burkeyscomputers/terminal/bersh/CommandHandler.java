@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.cjburkey.burkeyscomputers.ModUtil;
 import com.cjburkey.burkeyscomputers.computers.BaseComputer;
 
 public class CommandHandler {
@@ -103,11 +104,11 @@ public class CommandHandler {
 	}
 	
 	private String[] extractArgsArray(String[] segments) {
-		String[] args = new String[segments.length - 1];
+		/*String[] args = new String[segments.length - 1];
 		for (int i = 1; i < segments.length; i ++) {
 			args[i - 1] = segments[i];
-		}
-		return args;
+		}*/
+		return ModUtil.removeFirstArrayItem(segments, new String[segments.length - 1]);
 	}
 	
 	public String getUsage(BaseCommand cmd) {

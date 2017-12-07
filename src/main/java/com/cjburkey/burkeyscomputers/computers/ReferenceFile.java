@@ -1,9 +1,13 @@
 package com.cjburkey.burkeyscomputers.computers;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+import com.cjburkey.burkeyscomputers.ModInfo;
+import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 
 public class ReferenceFile {
 	
@@ -31,7 +35,7 @@ public class ReferenceFile {
 		dir = name.indexOf('.') < 0;
 	}
 	
-	public String getPath() {
+	public String getFullPath() {
 		StringBuilder out = new StringBuilder();
 		for (int i = 0; i < path.length; i ++) {
 			out.append(path[i]);
@@ -83,6 +87,14 @@ public class ReferenceFile {
 			return false;
 		}
 		return true;
+	}
+	
+	public String toString() {
+		return getFullPath();
+	}
+	
+	public static File getFile(long computer, ReferenceFile file) {
+		return new File(DimensionManager.getCurrentSaveRootDirectory(), "/" + ModInfo.MOD_ID + "/data/" + computer + "/files/" + file.getFullPath());
 	}
 	
 }

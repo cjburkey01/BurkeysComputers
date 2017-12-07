@@ -3,6 +3,7 @@ package com.cjburkey.burkeyscomputers.computers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import com.cjburkey.burkeyscomputers.ModInfo;
 import com.cjburkey.burkeyscomputers.ModLog;
 import net.minecraft.nbt.NBTTagCompound;
@@ -50,6 +51,10 @@ public class ComputerHandler extends WorldSavedData {
 		computers.remove(comp);
 		markDirty();
 	}
+	
+	public Set<Entry<Long, BaseComputer>> getComputers() {
+		return computers.entrySet();
+	}
 
 	public void readFromNBT(NBTTagCompound nbt) {
 		if (nbt == null || !nbt.hasKey("currentId") || !nbt.hasKey("computers")) {
@@ -65,8 +70,10 @@ public class ComputerHandler extends WorldSavedData {
 			long id = comp.getLong("compLongIDe");
 			String data = comp.getString("extraData");
 			BaseComputer cmpe = BaseComputer.loadFromData(data);
-			cmpe.updateId(id);
-			this.computers.put(id, cmpe);
+			if (cmpe != null) {
+				cmpe.updateId(id);
+				this.computers.put(id, cmpe);
+			}
 		}
 		currentId = nbt.getLong("currentId");
 	}
@@ -79,7 +86,15 @@ public class ComputerHandler extends WorldSavedData {
 		for (Entry<Long, BaseComputer> computer : computers.entrySet()) {
 			NBTTagCompound at = new NBTTagCompound();
 			at.setLong("compLongIDe", computer.getKey());
-			at.setString("extraData", computer.getValue().save());
+			StringBuilder finishedSavedData = new StringBuilder();
+			Object[] savedArray = computer.getValue().saveToString();
+			for (int i = 0; i < savedArray.length; i ++) {
+				finishedSavedData.append(savedArray[i]);
+				if (i < savedArray.length - 1) {
+					finishedSavedData.append(';');
+				}
+			}
+			at.setString("extraData", finishedSavedData.toString());
 			computer.getValue().writeToNBT(at);
 			tagList.appendTag(at);
 		}

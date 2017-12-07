@@ -11,11 +11,11 @@ public class ModBlocks {
 	
 	private static final List<Block> blocks = new ArrayList<>();
 	
-	public static Block blockComputer;
+	public static BlockComputer blockComputer;
 	
 	public static void registerBlocks(RegistryEvent.Register<Block> event) {
 		ModLog.info("Registering blocks.");
-		blockComputer = registerBlock(event, new BlockComputer(), "block_computer");
+		blockComputer = (BlockComputer) registerBlock(event, new BlockComputer(), "block_computer");
 	}
 	
 	private static Block registerBlock(RegistryEvent.Register<Block> e, Block block, String name) {

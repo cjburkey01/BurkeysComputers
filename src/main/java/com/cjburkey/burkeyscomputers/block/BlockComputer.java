@@ -1,11 +1,11 @@
 package com.cjburkey.burkeyscomputers.block;
 
-import com.cjburkey.burkeyscomputers.BurkeysComputers;
+import java.util.Map.Entry;
 import com.cjburkey.burkeyscomputers.ModLog;
+import com.cjburkey.burkeyscomputers.computers.BaseComputer;
 import com.cjburkey.burkeyscomputers.computers.ComputerHandler;
 import com.cjburkey.burkeyscomputers.computers.ComputerOpener;
 import com.cjburkey.burkeyscomputers.computers.WorldComputer;
-import com.cjburkey.burkeyscomputers.gui.GuiComputer;
 import com.cjburkey.burkeyscomputers.tile.TileEntityComputer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
@@ -13,6 +13,7 @@ import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -31,6 +32,7 @@ import net.minecraft.world.World;
 public class BlockComputer extends Block implements ITileEntityProvider {
 	
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
+	public static final PropertyBool ON = PropertyBool.create("working");
 
 	public BlockComputer() {
 		super(Material.IRON);
@@ -47,21 +49,45 @@ public class BlockComputer extends Block implements ITileEntityProvider {
 	}
 	
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+		linkComputerToTE(world, pos);
+	}
+	
+	public void setProcessing(World world, BlockPos pos, IBlockState state, boolean processing) {
+		world.setBlockState(pos, state.withProperty(ON, processing));
+		linkComputerToTE(world, pos);
+	}
+	
+	private void linkComputerToTE(World world, BlockPos pos) {
 		if (!world.isRemote) {
 			TileEntityComputer at = TileEntityComputer.getAt(world, pos);
 			if (at == null) {
 				return;
 			}
-			WorldComputer comp = new WorldComputer(pos, world.provider.getDimension());
-			ComputerHandler.get(world).addComputer(comp);
+			WorldComputer comp = getComputerAt(world, pos);
+			if (comp == null) {
+				comp = new WorldComputer(pos, world.provider.getDimension());
+				ComputerHandler.get(world).addComputer(comp);
+				ModLog.info("Created in-world computer with id: " + comp.getUniqueId());
+			}
 			at.setComputer(comp.getUniqueId());
-			ModLog.info("Created computer with id: " + comp.getUniqueId());
 		}
+	}
+	
+	private WorldComputer getComputerAt(World world, BlockPos pos) {
+		for (Entry<Long, BaseComputer> entry : ComputerHandler.get(world).getComputers()) {
+			if (entry.getValue() instanceof WorldComputer) {
+				WorldComputer bc = (WorldComputer) entry.getValue();
+				if (bc.getWorld() == world.provider.getDimension() && pos.equals(bc.getPos())) {
+					return bc;
+				}
+			}
+		}
+		return null;
 	}
 	
 	public void onBlockAdded(World world, BlockPos pos, IBlockState state) {
 		if (!world.isRemote) {
-			setDefaultFacing(world, pos, state);
+			setDefaultFacing(world, pos, state.withProperty(ON, false));
 		}
 	}
 	
@@ -95,8 +121,12 @@ public class BlockComputer extends Block implements ITileEntityProvider {
 		}
 	}
 	
+	public IBlockState getDefProp() {
+		return getDefaultState().withProperty(ON, false);
+	}
+	
 	public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float x, float y, float z, int data, EntityLivingBase player) {
-		return getDefaultState().withProperty(FACING, player.getHorizontalFacing().getOpposite());
+		return getDefProp().withProperty(FACING, player.getHorizontalFacing().getOpposite()).withProperty(ON, false);
 	}
 	
 	public IBlockState getStateFromMeta(int data) {
@@ -104,7 +134,7 @@ public class BlockComputer extends Block implements ITileEntityProvider {
 		if (facing.getAxis() == EnumFacing.Axis.Y) {
 			facing = EnumFacing.NORTH;
 		}
-		return getDefaultState().withProperty(FACING, facing);
+		return getDefProp().withProperty(FACING, facing);
 	}
 	
 	public int getMetaFromState(IBlockState state) {
@@ -120,7 +150,7 @@ public class BlockComputer extends Block implements ITileEntityProvider {
 	}
 	
 	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, new IProperty[] { FACING });
+		return new BlockStateContainer(this, new IProperty[] { FACING, ON });
 	}
 	
 	public TileEntity createNewTileEntity(World world, int data) {

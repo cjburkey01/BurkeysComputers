@@ -2,7 +2,7 @@
     "parent": "block/orientable",
     "textures": {
         "top": "burkeyscomputers:blocks/block_computer_side",
-        "front": "burkeyscomputers:blocks/block_computer_front",
+        "front": "burkeyscomputers:blocks/block_computer_front_blank",
         "side": "burkeyscomputers:blocks/block_computer_side"
     }
 }
