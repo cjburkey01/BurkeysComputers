@@ -4,39 +4,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.cjburkey.burkeyscomputers.computers.IComputer;
+import com.cjburkey.burkeyscomputers.computers.BaseComputer;
 
 public class CommandHandler {
 
-	private final ICommand parent;
-	private final List<ICommand> commands;
+	private final BaseCommand parent;
+	private final List<BaseCommand> commands;
 	
-	public CommandHandler(ICommand parent) {
+	public CommandHandler(BaseCommand parent) {
 		this.parent = parent;
 		commands = new ArrayList<>();
 	}
 	
-	public void addCommand(ICommand cmd) {
+	public void addCommand(BaseCommand cmd) {
 		if (commandExists(cmd.getName())) {
 			return;
 		}
 		commands.add(cmd);
 	}
 	
-	public void addCommand(CommandSet cmds) {
-		for (ICommand cmd : cmds.getCommands()) {
+	public void addCommands(BaseDriver cmds) {
+		for (BaseCommand cmd : cmds.getCommands()) {
 			addCommand(cmd);
 		}
 	}
 	
-	public void removeCommand(ICommand cmd) {
+	public void removeCommand(BaseCommand cmd) {
 		if (!commandExists(cmd.getName())) {
 			return;
 		}
 		commands.remove(cmd);
 	}
 	
-	public void cpuCycle(IComputer computer, int operationsPerCycle) {
+	public void cpuCycle(BaseComputer computer, int operationsPerCycle) {
 		for (int i = 0; i < operationsPerCycle; i ++) {
 			if (computer.getProcessHandler().isEmpty()) {
 				return;
@@ -45,22 +45,27 @@ public class CommandHandler {
 		}
 	}
 	
-	private void executeCommand(IComputer computer, CmdProcess process) {
+	private void executeCommand(BaseComputer computer, CmdProcess process) {
 		if (process == null) {
 			return;
 		}
 		if (process.getPredeterminedResult().equals(EnumCommandResponse.UNPROCESSED)) {
-			computer.onCommandResponse(process.getCommand().onCall(computer, process.getArguments()), process);
+			EnumCommandResponse ret = process.getCommand().onCall(computer, process.getArguments());
+			if (ret.equals(EnumCommandResponse.UNFINISHED)) {
+				computer.getProcessHandler().addProcess(process);
+			} else {
+				computer.onCommandResponse(ret, process);
+			}
 			return;
 		}
 		computer.onCommandResponse(process.getPredeterminedResult(), process);
 	}
 	
-	public void addCommandToExectionStack(IComputer computer, String line) {
+	public void addCommandToExectionStack(BaseComputer computer, String line) {
 		computer.getProcessHandler().addProcess(registerCommandExecution(computer, line));
 	}
 	
-	private CmdProcess registerCommandExecution(IComputer computer, String line) {
+	private CmdProcess registerCommandExecution(BaseComputer computer, String line) {
 		List<String> pieces = new ArrayList<>();
 		String regex = "\"([^\"]*)\"|(\\S+)";
 		Matcher m = Pattern.compile(regex).matcher(line);
@@ -74,11 +79,11 @@ public class CommandHandler {
 		return process(computer, pieces.toArray(new String[pieces.size()]));
 	}
 	
-	private CmdProcess process(IComputer computer, String[] segments) {
+	private CmdProcess process(BaseComputer computer, String[] segments) {
 		if (segments.length < 1) {
 			return new CmdProcess(null, new String[0], EnumCommandResponse.EMPTY);
 		}
-		ICommand cmd = getCommand(segments[0]);
+		BaseCommand cmd = getCommand(segments[0]);
 		if (cmd == null) {
 			return new CmdProcess(null, new String[0], EnumCommandResponse.CMD_NOT_FOUND);
 		}
@@ -105,7 +110,10 @@ public class CommandHandler {
 		return args;
 	}
 	
-	public String getUsage(ICommand cmd) {
+	public String getUsage(BaseCommand cmd) {
+		if (cmd == null) {
+			return "FATAL ERR";
+		}
 		StringBuilder out = new StringBuilder();
 		out.append(cmd.getName());
 		out.append(' ');
@@ -123,7 +131,7 @@ public class CommandHandler {
 			}
 		} else {
 			out.append('<');
-			ICommand[] cmds = sub.getCommands();
+			BaseCommand[] cmds = sub.getCommands();
 			for (int i = 0; i < cmds.length; i ++) {
 				out.append(cmds[i].getName());
 				if (i < cmds.length - 1) {
@@ -135,7 +143,7 @@ public class CommandHandler {
 		return out.toString();
 	}
 	
-	public ICommand getParentCommand() {
+	public BaseCommand getParentCommand() {
 		return parent;
 	}
 	
@@ -143,8 +151,8 @@ public class CommandHandler {
 		return getParentCommand() != null;
 	}
 	
-	public ICommand getCommand(String name) {
-		for (ICommand cmd : commands) {
+	public BaseCommand getCommand(String name) {
+		for (BaseCommand cmd : commands) {
 			if (cmd.getName().equalsIgnoreCase(name)) {
 				return cmd;
 			}
@@ -152,13 +160,13 @@ public class CommandHandler {
 		return null;
 	}
 	
-	public ICommand getCommandFromLine(String line) {
+	public BaseCommand getCommandFromLine(String line) {
 		String[] s = line.trim().split(Pattern.quote(" "));
 		return getCommand(s[0].trim());
 	}
 	
-	public ICommand[] getCommands() {
-		return commands.toArray(new ICommand[commands.size()]);
+	public BaseCommand[] getCommands() {
+		return commands.toArray(new BaseCommand[commands.size()]);
 	}
 	
 	public boolean commandExists(String name) {

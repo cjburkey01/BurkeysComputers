@@ -1,8 +1,14 @@
-package com.cjburkey.burkeyscomputers.terminal.bersh.cmds;
+package com.cjburkey.burkeyscomputers.terminal.bersh;
 
-import com.cjburkey.burkeyscomputers.terminal.bersh.ICommand;
+import com.cjburkey.burkeyscomputers.computers.BaseComputer;
 
-public abstract class CommandBase implements ICommand {
+public abstract class BaseCommand {
+	
+	public abstract String getName();
+	public abstract String[] getAllArgs();
+	public abstract int getRequiredArgs();
+	public abstract CommandHandler getSubCommandHandler();
+	public abstract EnumCommandResponse onCall(BaseComputer computer, String[] args);
 	
 	public int hashCode() {
 		final int prime = 31;
@@ -21,7 +27,7 @@ public abstract class CommandBase implements ICommand {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		CommandBase other = (CommandBase) obj;
+		BaseCommand other = (BaseCommand) obj;
 		if (getName() == null) {
 			if (other.getName() != null) {
 				return false;

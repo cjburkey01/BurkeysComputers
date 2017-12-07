@@ -1,17 +1,20 @@
 package com.cjburkey.burkeyscomputers.computers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import org.lwjgl.input.Keyboard;
+import com.cjburkey.burkeyscomputers.ModInfo;
 import com.cjburkey.burkeyscomputers.ModLog;
 import com.cjburkey.burkeyscomputers.terminal.bersh.CmdProcess;
 import com.cjburkey.burkeyscomputers.terminal.bersh.CommandHandler;
-import com.cjburkey.burkeyscomputers.terminal.bersh.CommandSet;
+import com.cjburkey.burkeyscomputers.terminal.bersh.DefaultDriver;
 import com.cjburkey.burkeyscomputers.terminal.bersh.EnumCommandResponse;
 import com.cjburkey.burkeyscomputers.terminal.bersh.ProcessHandler;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 
-public class WorldComputer implements IComputer {
+public class WorldComputer extends BaseComputer {
 	
 	private long uniqueId = -1;
 	private TermCell[] screen;
@@ -21,10 +24,15 @@ public class WorldComputer implements IComputer {
 	private int world;
 	private TermPos prevCursor;
 	private MutTermPos cursorPos;
+	private int cursorForeColor = TermCell.getDefaultForegroundColor();
+	private int cursorBackColor = TermCell.getDefaultBackgroundColor();
 	private ProcessHandler processHandler;
 	private boolean updateAvailable = false;
 	
-	private String command = "";
+	private final List<String> previous = new ArrayList<>();
+	private final StringBuilder command = new StringBuilder();
+	private int cmdIndex = 0;
+	private int prevIndex = 0;
 	
 	public WorldComputer(BlockPos pos, int world) {
 		this.pos = pos;
@@ -32,7 +40,7 @@ public class WorldComputer implements IComputer {
 		clearScreen();
 		fs = new ComputerFileSystem(this);
 		ch = new CommandHandler(null);
-		ch.addCommand(new CommandSet());
+		ch.addCommands(new DefaultDriver());
 		processHandler = new ProcessHandler();
 		resetDisplay();
 	}
@@ -49,23 +57,27 @@ public class WorldComputer implements IComputer {
 	
 	public void resetDisplay() {
 		clearScreen();
-		cursorPos = new MutTermPos(0, 0);
+		String version = "BERSH v" + ModInfo.MOD_VERSION;
+		cursorPos = new MutTermPos((BaseComputer.cols - version.length()) / 2, 0);
+		drawStringAtCursor(0xD81212, 0x114545, version);
+		cursorPos.col = 0;
+		cursorPos.row = 2;
 		setupMainInputLine();
 	}
 	
 	public void setupMainInputLine() {
-		getCell(new TermPos(0, cursorPos.row)).setCharacter('>');
+		setCharacter(0, cursorPos.row, '>', true);
 		setCursor(1, cursorPos.row);
 	}
 	
 	private void verifyCursorPos(int resetCol) {
-		if (cursorPos.col >= IComputer.cols) {
+		if (cursorPos.col >= BaseComputer.cols) {
 			cursorPos.col = resetCol;
 			cursorPos.row ++;
 		}
-		if (cursorPos.row >= IComputer.rows) {
+		if (cursorPos.row >= BaseComputer.rows) {
 			scrollDown();
-			setCursor(cursorPos.col, IComputer.rows - 1);
+			setCursor(cursorPos.col, BaseComputer.rows - 1);
 		}
 	}
 	
@@ -86,28 +98,81 @@ public class WorldComputer implements IComputer {
 	}
 	
 	public TermCell getCell(TermPos pos) {
-		if (!IComputer.fitsOnScreen(pos)) {
+		if (!BaseComputer.fitsOnScreen(pos)) {
 			return TermCell.ERROR;
 		}
 		return screen[getIndex(pos)];
 	}
 	
 	public void clearScreen() {
-		screen = IComputer.getNewEmptyScreen();
+		if (screen == null || screen.length < BaseComputer.cols * BaseComputer.rows) {
+			screen = BaseComputer.getNewEmptyScreen();
+		}
+		for (int x = 0; x < BaseComputer.cols; x ++) {
+			for (int y = 0; y < BaseComputer.rows; y ++) {
+				setCharacter(x, y, (char) 0, true);
+			}
+		}
 	}
 	
 	public void keyTyped(int code, char typed) {
-		updateAvailable = true;
-		if (code == Keyboard.KEY_NUMPADENTER || code == Keyboard.KEY_RETURN) {
-			setCursor(0, cursorPos.row + 1);
-			ch.addCommandToExectionStack(this, command);
-			command = "";
-			return;
-		}
-		if ((typed >= 32 && typed <= 126) || (typed >= 160 && typed <= 255)) {
-			getCell(cursorPos.getImmutPos()).setCharacter(typed);
-			setCursor(cursorPos.col + 1, cursorPos.row);
-			command += typed;
+		if (processHandler.isEmpty()) {
+			if (code == Keyboard.KEY_NUMPADENTER || code == Keyboard.KEY_RETURN) {
+				setCursor(0, cursorPos.row + 1);
+				String cmd = command.toString();
+				ch.addCommandToExectionStack(this, cmd);
+				previous.add(cmd);
+				command.setLength(0);
+				cmdIndex = 0;
+				prevIndex = 0;
+				return;
+			}
+			if (code == Keyboard.KEY_UP) {
+				if (previous.size() - 1 >= prevIndex) {
+					String prev = previous.get(previous.size() - 1 - prevIndex);
+					prevIndex ++;
+					for (int x = 1; x < BaseComputer.cols; x ++) {
+						setCharacter(x, cursorPos.row, (char) 0, true);
+					}
+					command.setLength(0);
+					command.append(prev);
+					cmdIndex = command.length();
+					setCursor(1, cursorPos.row);
+					drawStringAtCursor(prev);
+					setCursor(1 + cmdIndex, cursorPos.row);
+				}
+				return;
+			}
+			prevIndex = 0;
+			if (command.length() > 0) {
+				if (code == Keyboard.KEY_BACK) {
+					setCursor(cursorPos.col - 1, cursorPos.row);
+					//setCharacter(cursorPos.row, cursorPos.row, (char) 0, true);
+					getCell(cursorPos.getImmutPos()).setCharacter((char) 0);
+					cmdIndex --;
+					command.deleteCharAt(cmdIndex);
+					return;
+				}
+				if (code == Keyboard.KEY_LEFT && cmdIndex > 0) {
+					setCursor(cursorPos.col - 1, cursorPos.row);
+					cmdIndex --;
+					return;
+				}
+				if (code == Keyboard.KEY_RIGHT && cmdIndex < command.length()) {
+					setCursor(cursorPos.col + 1, cursorPos.row);
+					cmdIndex ++;
+					return;
+				}
+			}
+			if ((typed >= 32 && typed <= 126) || (typed >= 160 && typed <= 255)) {
+				setCharacter(cursorPos.col, cursorPos.row, typed, true);
+				setCursor(cursorPos.col + 1, cursorPos.row);
+				if (cmdIndex >= command.length()) {
+					command.setLength(command.length() + 1);
+				}
+				command.setCharAt(cmdIndex, typed);
+				cmdIndex ++;
+			}
 		}
 	}
 	
@@ -117,17 +182,56 @@ public class WorldComputer implements IComputer {
 		}
 		char[] s = in.toCharArray();
 		for (char c : s) {
-			getCell(cursorPos.getImmutPos()).setCharacter(c);
+			setCharacter(cursorPos.col, cursorPos.row, c, true);
 			setCursor(cursorPos.col + 1, cursorPos.row);
 		}
 	}
 	
+	public void drawStringAtCursor(int fcolor, String in) {
+		int prevFore = cursorForeColor;
+		setCursorColor(cursorBackColor, fcolor);
+		drawStringAtCursor(in);
+		cursorForeColor = prevFore;
+	}
+	
+	public void drawStringAtCursor(int fcolor, int bcolor, String in) {
+		int prevFore = cursorForeColor;
+		int prevBack = cursorBackColor;
+		setCursorColor(bcolor, fcolor);
+		drawStringAtCursor(in);
+		cursorForeColor = prevFore;
+		cursorBackColor = prevBack;
+	}
+	
 	private void scrollDown() {
-		for (int y = 0; y < IComputer.rows; y ++) {
-			for (int x = 0; x < IComputer.cols; x ++) {
-				getCell(new TermPos(x, y)).setCharacter((y < IComputer.rows - 1) ? (getCell(new TermPos(x, y + 1)).getCharacter()) : ((char) 0));
+		int prevFore = cursorForeColor;
+		int prevBack = cursorBackColor;
+		for (int y = 0; y < BaseComputer.rows; y ++) {
+			for (int x = 0; x < BaseComputer.cols; x ++) {
+				boolean top = y < BaseComputer.rows - 1;
+				TermCell below = getCell(new TermPos(x, y + 1));
+				if (top) {
+					cursorForeColor = below.getForegroundColor();
+					cursorBackColor = below.getBackgroundColor();
+				}
+				setCharacter(x, y, (top) ? (below.getCharacter()) : ((char) 0), true);
 			}
 		}
+		cursorForeColor = prevFore;
+		cursorBackColor = prevBack;
+	}
+	
+	public void setCharacter(int col, int row, char character, boolean color) {
+		updateAvailable = true;
+		TermCell cell = getCell(new TermPos(col, row));
+		if (cell == null) {
+			return;
+		}
+		if (color) {
+			cell.setBackgroundColor(cursorBackColor);
+			cell.setForegroundColor(cursorForeColor);
+		}
+		cell.setCharacter(character);
 	}
 	
 	public ComputerFileSystem getFileSystem() {
@@ -150,7 +254,7 @@ public class WorldComputer implements IComputer {
 	}
 	
 	private int getIndex(TermPos pos) {
-		if (!IComputer.fitsOnScreen(pos)) {
+		if (!BaseComputer.fitsOnScreen(pos)) {
 			return -1;
 		}
 		return pos.row * cols + pos.col;
@@ -186,6 +290,7 @@ public class WorldComputer implements IComputer {
 	}
 	
 	public void setCursor(int col, int row) {
+		updateAvailable = true;
 		cursorPos.col = col;
 		cursorPos.row = row;
 		verifyCursorPos();
@@ -199,15 +304,28 @@ public class WorldComputer implements IComputer {
 		if (res.equals(EnumCommandResponse.CMD_NOT_FOUND)) {
 			drawStringAtCursor("Command not found");
 		} else if(res.equals(EnumCommandResponse.ARGS_SHORT) || res.equals(EnumCommandResponse.ARGS_LONG)) {
-			drawStringAtCursor("Usage: " + ch.getUsage(ch.getCommandFromLine(command)));
+			drawStringAtCursor("Usage: " + ch.getUsage(process.getCommand()));
 		} else if(res.equals(EnumCommandResponse.FAIL)) {
 			drawStringAtCursor("Command failed");
 		}
 		if (!res.equals(EnumCommandResponse.CANCEL_RESPONSE)) {
 			setCursor(new TermPos(0, cursorPos.row + 1));
-			setupMainInputLine();
 		}
+		setupMainInputLine();
 		updateAvailable = true;
+	}
+	
+	public int getCursorBackground() {
+		return cursorBackColor;
+	}
+	
+	public int getCursorForeground() {
+		return cursorForeColor;
+	}
+	
+	public void setCursorColor(int back, int fore) {
+		cursorBackColor = back;
+		cursorForeColor = fore;
 	}
 	
 }

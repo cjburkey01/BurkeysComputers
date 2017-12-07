@@ -25,11 +25,11 @@ public final class TermCell {
 	}
 	
 	public TermCell(char character) {
-		this(0x33BB33, character);
+		this(getDefaultForegroundColor(), character);
 	}
 	
 	public TermCell(int foregroundColor, char character) {
-		this(foregroundColor, 0x2A2A2A, character);
+		this(foregroundColor, getDefaultBackgroundColor(), character);
 	}
 	
 	public TermCell(int foregroundColor, int backgroundColor, char character) {
@@ -74,6 +74,14 @@ public final class TermCell {
 	
 	public int getDrawingBackgroundColor() {
 		return backgroundColor + 0xFF000000;
+	}
+	
+	public static int getDefaultBackgroundColor() {
+		return 0x2A2A2A;
+	}
+	
+	public static int getDefaultForegroundColor() {
+		return 0x33BB33;
 	}
 
 	public char getCharacter() {

@@ -17,7 +17,7 @@ public class ComputerHandler extends WorldSavedData {
 	private static ComputerHandler inst;
 	
 	private long currentId = 0;
-	private Map<Long, IComputer> computers = new HashMap<>();
+	private Map<Long, BaseComputer> computers = new HashMap<>();
 	
 	public ComputerHandler() {
 		this(DATA_NAME);
@@ -27,7 +27,7 @@ public class ComputerHandler extends WorldSavedData {
 		super(name);
 	}
 	
-	public void addComputer(IComputer comp) {
+	public void addComputer(BaseComputer comp) {
 		if (comp == null) {
 			return;
 		}
@@ -64,7 +64,7 @@ public class ComputerHandler extends WorldSavedData {
 			}
 			long id = comp.getLong("compLongIDe");
 			String data = comp.getString("extraData");
-			IComputer cmpe = IComputer.loadFromData(data);
+			BaseComputer cmpe = BaseComputer.loadFromData(data);
 			cmpe.updateId(id);
 			this.computers.put(id, cmpe);
 		}
@@ -76,7 +76,7 @@ public class ComputerHandler extends WorldSavedData {
 			nbt = new NBTTagCompound();
 		}
 		NBTTagList tagList = new NBTTagList();
-		for (Entry<Long, IComputer> computer : computers.entrySet()) {
+		for (Entry<Long, BaseComputer> computer : computers.entrySet()) {
 			NBTTagCompound at = new NBTTagCompound();
 			at.setLong("compLongIDe", computer.getKey());
 			at.setString("extraData", computer.getValue().save());
@@ -88,7 +88,7 @@ public class ComputerHandler extends WorldSavedData {
 		return nbt;
 	}
 	
-	public IComputer getComputer(long id) {
+	public BaseComputer getComputer(long id) {
 		return computers.get(id);
 	}
 	

@@ -4,7 +4,7 @@ import java.io.IOException;
 import org.lwjgl.input.Keyboard;
 import com.cjburkey.burkeyscomputers.ModInfo;
 import com.cjburkey.burkeyscomputers.computers.ComputerOpener;
-import com.cjburkey.burkeyscomputers.computers.IComputer;
+import com.cjburkey.burkeyscomputers.computers.BaseComputer;
 import com.cjburkey.burkeyscomputers.computers.TermCell;
 import com.cjburkey.burkeyscomputers.computers.TermPos;
 import com.cjburkey.burkeyscomputers.container.ContainerComputer;
@@ -24,7 +24,7 @@ public class GuiComputer extends GuiContainer {
 	
 	private long computer;
 	
-	private static TermCell[] drawnCells = IComputer.getNewEmptyScreen();
+	private static TermCell[] drawnCells = BaseComputer.getNewEmptyScreen();
 	private static TermPos cursorPos;
 	private static boolean processing;
 	
@@ -37,7 +37,7 @@ public class GuiComputer extends GuiContainer {
 	
 	public void initGui() {
 		super.initGui();
-		requestComputerDataPacket();
+		requestComputerDataPacket(true);
 	}
 	
 	public static void updateContents(boolean working, TermPos cursor, TermCell[] updated) {
@@ -65,7 +65,7 @@ public class GuiComputer extends GuiContainer {
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		drawDefaultBackground();
 		super.drawScreen(mouseX, mouseY, partialTicks);
-		requestComputerDataPacket();
+		requestComputerDataPacket(false);
 	}
 	
 	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
@@ -82,8 +82,8 @@ public class GuiComputer extends GuiContainer {
 	}
 	
 	private void drawTerminal(int mx, int my) {
-		int cols = IComputer.cols;
-		int rows = IComputer.rows;
+		int cols = BaseComputer.cols;
+		int rows = BaseComputer.rows;
 		for (int x = 0; x < cols; x ++) {
 			for (int y = 0; y < rows; y ++) {
 				TermCell cell = drawnCells[y * cols + x];
@@ -91,10 +91,12 @@ public class GuiComputer extends GuiContainer {
 				drawCellForeground(x, y, cell);
 			}
 		}
-		TermPos pos = pixelToCell(mx - guiLeft, my - guiTop);
-		if (IComputer.fitsOnScreen(pos)) {
+		
+		// Draw mouse cursor cell indicator.
+		/*TermPos pos = pixelToCell(mx - guiLeft, my - guiTop);
+		if (Computer.fitsOnScreen(pos)) {
 			fillCell(pos.col, pos.row, 0x44FFFFFF);
-		}
+		}*/
 	}
 	
 	private TermPos pixelToCell(int x, int y) {
@@ -135,10 +137,10 @@ public class GuiComputer extends GuiContainer {
 	
 	// -- PACKETS -- //
 	
-	public void requestComputerDataPacket() {
+	public void requestComputerDataPacket(boolean init) {
 		computer = ComputerOpener.getClientComputer();
 		if (computer >= 0) {
-			ModPacketHandler.getNetwork().sendToServer(new PacketRequestUpdate(computer));
+			ModPacketHandler.getNetwork().sendToServer(new PacketRequestUpdate(computer, init));
 		}
 	}
 	

@@ -5,10 +5,10 @@ import java.util.Map;
 
 public class ComputerFileSystem {
 	
-	private final IComputer parent;
+	private final BaseComputer parent;
 	private final Map<ReferenceFile, FileContents> files;
 	
-	public ComputerFileSystem(IComputer parent) {
+	public ComputerFileSystem(BaseComputer parent) {
 		this.parent = parent;
 		files = new HashMap<>();
 	}

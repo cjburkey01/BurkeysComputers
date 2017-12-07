@@ -3,7 +3,7 @@ package com.cjburkey.burkeyscomputers.packet;
 import java.util.regex.Pattern;
 import com.cjburkey.burkeyscomputers.ModLog;
 import com.cjburkey.burkeyscomputers.computers.ComputerHandler;
-import com.cjburkey.burkeyscomputers.computers.IComputer;
+import com.cjburkey.burkeyscomputers.computers.BaseComputer;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
@@ -53,7 +53,7 @@ public class PacketUserTyped implements IMessage {
 		// Run on server
 		public PacketUpdateToClient onMessage(PacketUserTyped msg, MessageContext ctx) {
 			World world = ctx.getServerHandler().player.world;
-			IComputer at = ComputerHandler.get(world).getComputer(msg.id);
+			BaseComputer at = ComputerHandler.get(world).getComputer(msg.id);
 			if (at != null) {
 				at.keyTyped(msg.code, msg.typed);
 			} else {

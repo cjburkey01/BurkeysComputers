@@ -1,11 +1,12 @@
 package com.cjburkey.burkeyscomputers.terminal.bersh.cmds;
 
-import com.cjburkey.burkeyscomputers.computers.IComputer;
+import com.cjburkey.burkeyscomputers.computers.BaseComputer;
 import com.cjburkey.burkeyscomputers.computers.TermPos;
+import com.cjburkey.burkeyscomputers.terminal.bersh.BaseCommand;
 import com.cjburkey.burkeyscomputers.terminal.bersh.CommandHandler;
 import com.cjburkey.burkeyscomputers.terminal.bersh.EnumCommandResponse;
 
-public class CommandPrintAt extends CommandBase {
+public class CommandPrintAt extends BaseCommand {
 	
 	public String getName() {
 		return "printat";
@@ -23,7 +24,7 @@ public class CommandPrintAt extends CommandBase {
 		return null;
 	}
 
-	public EnumCommandResponse onCall(IComputer computer, String[] args) {
+	public EnumCommandResponse onCall(BaseComputer computer, String[] args) {
 		try {
 			int col = Integer.parseInt(args[1]);
 			int row = Integer.parseInt(args[2]);

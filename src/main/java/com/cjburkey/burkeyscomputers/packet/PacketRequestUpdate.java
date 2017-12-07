@@ -3,7 +3,7 @@ package com.cjburkey.burkeyscomputers.packet;
 import java.util.regex.Pattern;
 import com.cjburkey.burkeyscomputers.ModLog;
 import com.cjburkey.burkeyscomputers.computers.ComputerHandler;
-import com.cjburkey.burkeyscomputers.computers.IComputer;
+import com.cjburkey.burkeyscomputers.computers.BaseComputer;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
@@ -14,20 +14,24 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class PacketRequestUpdate implements IMessage {
 	
 	private long id;
+	private boolean init;
 	
 	public PacketRequestUpdate() {
 	}
 	
-	public PacketRequestUpdate(long cmp) {
+	public PacketRequestUpdate(long cmp, boolean force) {
 		id = cmp;
+		init = force;
 	}
 	
 	public void fromBytes(ByteBuf buf) {
 		id = buf.readLong();
+		init = buf.readBoolean();
 	}
 	
 	public void toBytes(ByteBuf buf) {
 		buf.writeLong(id);
+		buf.writeBoolean(init);
 	}
 	
 	public static class Handler implements IMessageHandler<PacketRequestUpdate, PacketUpdateToClient> {
@@ -35,9 +39,9 @@ public class PacketRequestUpdate implements IMessage {
 		// Run on server
 		public PacketUpdateToClient onMessage(PacketRequestUpdate msg, MessageContext ctx) {
 			World world = ctx.getServerHandler().player.world;
-			IComputer at = ComputerHandler.get(world).getComputer(msg.id);
+			BaseComputer at = ComputerHandler.get(world).getComputer(msg.id);
 			if (at != null) {
-				if (at.hasUpdated()) {
+				if (msg.init || at.hasUpdated()) {
 					return new PacketUpdateToClient(world, msg.id);
 				} else {
 					return null;

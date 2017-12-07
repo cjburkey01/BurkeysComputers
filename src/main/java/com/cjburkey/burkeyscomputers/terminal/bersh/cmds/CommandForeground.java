@@ -5,14 +5,14 @@ import com.cjburkey.burkeyscomputers.terminal.bersh.BaseCommand;
 import com.cjburkey.burkeyscomputers.terminal.bersh.CommandHandler;
 import com.cjburkey.burkeyscomputers.terminal.bersh.EnumCommandResponse;
 
-public class CommandPrint extends BaseCommand {
+public class CommandForeground extends BaseCommand {
 	
 	public String getName() {
-		return "print";
+		return "textcolor";
 	}
 
 	public String[] getAllArgs() {
-		return new String[] { "message" };
+		return new String[] { "color" };
 	}
 
 	public int getRequiredArgs() {
@@ -24,7 +24,12 @@ public class CommandPrint extends BaseCommand {
 	}
 
 	public EnumCommandResponse onCall(BaseComputer computer, String[] args) {
-		computer.drawStringAtCursor(args[0]);
+		try {
+			computer.setCursorColor(computer.getCursorBackground(), Integer.parseInt(args[0], 16));
+			return EnumCommandResponse.CANCEL_RESPONSE;
+		} catch (Exception e) {
+		}
+		computer.drawStringAtCursor(0xFF0000, 0xFFFFFF, "Please enter a valid hex code");
 		return EnumCommandResponse.SUCCESS;
 	}
 	

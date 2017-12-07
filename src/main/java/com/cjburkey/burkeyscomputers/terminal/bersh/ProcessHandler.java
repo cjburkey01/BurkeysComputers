@@ -6,7 +6,7 @@ public class ProcessHandler {
 	
 	private final Stack<CmdProcess> processes = new Stack<>();
 	
-	public void addProcess(ICommand cmd, EnumCommandResponse resp, String... args) {
+	public void addProcess(BaseCommand cmd, EnumCommandResponse resp, String... args) {
 		addProcess(new CmdProcess(cmd, args, resp));
 	}
 	

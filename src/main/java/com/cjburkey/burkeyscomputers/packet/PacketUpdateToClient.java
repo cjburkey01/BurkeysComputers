@@ -3,7 +3,7 @@ package com.cjburkey.burkeyscomputers.packet;
 import java.util.ArrayList;
 import java.util.List;
 import com.cjburkey.burkeyscomputers.computers.ComputerHandler;
-import com.cjburkey.burkeyscomputers.computers.IComputer;
+import com.cjburkey.burkeyscomputers.computers.BaseComputer;
 import com.cjburkey.burkeyscomputers.computers.TermCell;
 import com.cjburkey.burkeyscomputers.computers.TermPos;
 import com.cjburkey.burkeyscomputers.gui.GuiComputer;
@@ -23,7 +23,7 @@ public class PacketUpdateToClient implements IMessage {
 	}
 	
 	public PacketUpdateToClient(World world, long computer) {
-		IComputer comp = ComputerHandler.get(world).getComputer(computer);
+		BaseComputer comp = ComputerHandler.get(world).getComputer(computer);
 		working = !comp.getProcessHandler().isEmpty();
 		cursor = comp.getCursor().getImmutPos();
 		screen = comp.getScreen();
@@ -32,10 +32,10 @@ public class PacketUpdateToClient implements IMessage {
 	public void fromBytes(ByteBuf buf) {
 		working = buf.readBoolean();
 		cursor = TermPos.fromByteBuf(buf);
-		int length = IComputer.cols * IComputer.rows;
+		int length = BaseComputer.cols * BaseComputer.rows;
 		List<TermCell> cells = new ArrayList<>();
 		TermCell tmp;
-		while ((tmp = TermCell.loadFromBuffer(buf, IComputer.cols, IComputer.rows)) != null) {
+		while ((tmp = TermCell.loadFromBuffer(buf, BaseComputer.cols, BaseComputer.rows)) != null) {
 			cells.add(tmp);
 		}
 		if (screen == null || cells.size() == screen.length) {
